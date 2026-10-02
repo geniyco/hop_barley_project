@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Особистий кабінет | Hop & Barley</title>
+
+    <!-- Google Fonts & Font Awesome -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cloudflare.com" />
+
+    <!-- Головні стилі сайту -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+
+<!-- Header -->
+<header>
+    <div class="header-container">
+        <a href="{% url 'products:product_list' %}" class="header__logo">
+            <img src="{% static 'img/logo.svg' %}" alt="Hop & Barley Logo">
+            <p class="logo-text">Hop & Barley</p>
+        </a>
+        <nav class="header__nav">
+            <ul>
+                <li><a href="{% url 'products:product_list' %}">Products</a></li>
+                <li><a href="#">Guides & Recipes</a></li>
+                <li><a href="#">Community</a></li>
+                <li><a href="#">Resources</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </nav>
+
+        <div class="header__user-actions" id="auth-user">
+            <a href="{% url 'users:account' %}" class="user-icon" aria-label="My Account">
+                <img src="{% static 'img/icons/User_alt.svg' %}" alt="User Account">
+            </a>
+            <a href="{% url 'orders:cart_detail' %}" class="cart-icon" aria-label="Shopping Cart">
+                <img src="{% static 'img/icons/Shopping_bag.svg' %}" alt="Shopping Cart">
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main style="padding: 40px 0; background-color: #f9f9f9; min-height: 80vh;">
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+
+        <!-- Сповіщення (Message Framework) -->
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 15px; border-radius: 6px; margin-bottom: 20px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <h1 style="font-size: 26px; margin-bottom: 30px; color: #111;">User Account</h1>
+
+        <div style="display: flex; gap: 40px; flex-wrap: wrap; align-items: flex-start;">
+
+            <!-- ЛІВА ЧАСТИНА: Історія замовлень (Пункт 3.5 ТЗ) -->
+            <div style="flex: 2; min-width: 320px; background: #fff; padding: 30px; border-radius: 8px; border: 1px solid #eee;">
+                <h3 style="margin-top: 0; font-size: 18px; margin-bottom: 20px; color: #222; border-bottom: 2px solid #f5f5f5; padding-bottom: 10px;">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Order History
+                </h3>
+
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 15px;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #eee; color: #666; font-weight: 600;">
+                            <th style="padding: 10px 0;">Order Details</th>
+                            <th style="padding: 10px 0; text-align: center;">Order Status</th>
+                            <th style="padding: 10px 0; text-align: right;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 15px 0;">
+                                    <span style="font-weight: 600; color: #111; display: block;">#{{ order.id }}</span>
+                                    <small style="color: #888;">{{ order.created_at|date:"j M Y" }}</small>
+                                    <div style="margin-top: 5px; font-size: 13px; color: #666;">
+                                        {% for item in order.items.all %}
+                                            {{ item.product.name }} (x{{ item.quantity }}){% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td style="padding: 15px 0; text-align: center;">
+                                    <span style="padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: 500;
+                                                 background-color: {% if order.status == 'pending' %}#fff3cd{% elif order.status == 'paid' or order.status == 'delivered' %}#d4edda{% else %}#e2e3e5{% endif %};
+                                                 color: {% if order.status == 'pending' %}#856404{% elif order.status == 'paid' or order.status == 'delivered' %}#155724{% else %}#383d41{% endif %};">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </td>
+                                <td style="padding: 15px 0; text-align: right; font-weight: 700; color: #222;">
+                                    ${{ order.total_price }}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="3" style="padding: 30px 0; text-align: center; color: #888; font-style: italic;">
+                                    У вас ще немає замовлень.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ПРАВА ЧАСТИНА: Особиста інформація (Пункт 3.5 ТЗ) -->
+            <div style="flex: 1; min-width: 300px; background: #fff; padding: 30px; border-radius: 8px; border: 1px solid #eee;">
+                <h3 style="margin-top: 0; font-size: 18px; margin-bottom: 20px; color: #222; border-bottom: 2px solid #f5f5f5; padding-bottom: 10px;">
+                    <i class="fa-solid fa-user-gear"></i> Personal Info
+                </h3>
+
+                <div style="display: flex; flex-direction: column; gap: 15px; font-size: 14px; text-align: left; color: #444;">
+                    <div>
+                        <label style="font-weight: 600; color: #666; display: block; margin-bottom: 4px;">Full Name</label>
+                        <div style="padding: 10px; background: #f5f5f5; border-radius: 4px; color: #111; font-weight: 500;">
+                            {{ user.get_full_name|default:user.username }}
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; color: #666; display: block; margin-bottom: 4px;">Phone number</label>
+                        <div style="padding: 10px; background: #f5f5f5; border-radius: 4px; color: #111;">
+                            {{ user.phone|default:"Value" }}
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; color: #666; display: block; margin-bottom: 4px;">Email</label>
+                        <div style="padding: 10px; background: #f5f5f5; border-radius: 4px; color: #111;">
+                            {{ user.email|default:"example@mail.com" }}
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; color: #666; display: block; margin-bottom: 4px;">Shipping address</label>
+                        <div style="padding: 10px; background: #f5f5f5; border-radius: 4px; color: #111; line-height: 1.4;">
+                            {{ user.shipping_address|default:"Value" }}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 10px;">
+                    <a href="{% url 'users:logout' %}" class="button" style="text-align: center; background-color: #dc3545; color: #fff; text-decoration: none; padding: 12px; border-radius: 6px; font-weight: 600;">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer style="background-color: #111; color: #888; padding: 40px 0; font-size: 14px; text-align: left;">
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 30px;">
+        <div>
+            <h4 style="color: #fff; margin-bottom: 15px;">Hop & Barley</h4>
+            <p>© Hop & Barley 2026. All rights reserved</p>
+        </div>
+        <div style="display: flex; gap: 40px;">
+            <a href="#" style="color: #888; text-decoration: none;">FAQ</a>
+            <a href="#" style="color: #888; text-decoration: none;">Community</a>
+            <a href="#" style="color: #888; text-decoration: none;">License</a>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

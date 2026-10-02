@@ -1,0 +1,150 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог товарів | Hop & Barley</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+    <!-- Заміна відносного шляху на тег static згідно з ТЗ -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+<!-- Header -->
+<header>
+    <div class="header-container">
+        <a href="{% url 'products:product_list' %}" class="header__logo">
+            <img src="{% static 'img/logo.svg' %}" alt="Hop & Barley Logo">
+            <p class="logo-text">Hop & Barley</p>
+        </a>
+        <nav class="header__nav">
+            <ul>
+                <li><a href="{% url 'products:product_list' %}">Products</a></li>
+                <li><a href="#">Guides & Recipes</a></li>
+                <li><a href="#">Community</a></li>
+                <li><a href="#">Resources</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </nav>
+
+        <!-- Блок для неавторизованого користувача -->
+        <div class="header__auth-buttons" id="auth-guest">
+            <a href="#" class="button button--secondary">Sign in</a>
+            <a href="#" class="button button--primary">Register</a>
+        </div>
+
+        <!-- Блок для авторизованого користувача -->
+        <div class="header__user-actions" id="auth-user">
+            <a href="#" class="user-icon" aria-label="My Account">
+                <img src="{% static 'img/icons/User_alt.svg' %}" alt="User Account">
+            </a>
+            <a href="#" class="cart-icon" aria-label="Shopping Cart">
+                <img src="{% static 'img/icons/Shopping_bag.svg' %}" alt="Shopping Cart">
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main>
+    <section class="hero-banner">
+        <img src="{% static 'img/background/hopfen-fields.jpg' %}" alt="Beautiful hops on a dark background" class="hero-banner__image">
+        <div class="hero-banner__overlay"></div>
+    </section>
+
+    <div class="container main-content-grid">
+        <!-- Форма пошуку та фільтрації (Пункт 3.1 ТЗ) -->
+        <form method="get" action="{% url 'products:product_list' %}" class="filter-form-wrapper">
+            <aside class="sidebar filter-menu">
+                <div class="sidebar__section">
+                    <h3 class="section-title">Категорії</h3>
+                    <div class="checkbox-group">
+                        <a href="{% url 'products:product_list' %}" style="display: block; margin-bottom: 10px; color: var(--text-color, #333); text-decoration: none;">
+                            <strong>Всі товари</strong>
+                        </a>
+                        {% for cat in categories %}
+                            <a href="?category={{ cat.slug }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+                               style="display: block; margin-bottom: 8px; color: #555; text-decoration: none; padding-left: 5px;">
+                               • {{ cat.name }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </aside>
+
+            <section class="products-area product-grid-section">
+                <div class="search-sort-bar">
+                    <!-- Поліпшений пошук за назвою та описом -->
+                    <div class="search-input-wrapper">
+                        <input type="text" name="q" placeholder="Search" class="search-input" value="{{ request.GET.q }}">
+                        <button type="submit" class="search-button" aria-label="Search">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </div>
+
+                    <!-- Сортування товарів за параметрами з ТЗ -->
+                    <div class="sort-options">
+                        <a href="?sort=new{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}"
+                           class="sort-button {% if request.GET.sort == 'new' or not request.GET.sort %}active-sort{% endif %}" style="text-decoration: none;">New</a>
+
+                        <a href="?sort=price_asc{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}"
+                           class="sort-button {% if request.GET.sort == 'price_asc' %}active-sort{% endif %}" style="text-decoration: none;">Price ascending</a>
+
+                        <a href="?sort=price_desc{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}"
+                           class="sort-button {% if request.GET.sort == 'price_desc' %}active-sort{% endif %}" style="text-decoration: none;">Price descending</a>
+                    </div>
+                </div>
+        </form>
+
+            <!-- Динамічна сітка товарів із бази даних PostgreSQL -->
+            <div class="product-grid">
+                {% for product in products %}
+                    <a href="{% url 'products:product_detail' product.slug %}" class="product-card-link">
+                        <div class="product-card">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-card__image">
+                            {% else %}
+                                <img src="{% static 'img/products/citra_hops.jpg' %}" alt="Placeholder" class="product-card__image">
+                            {% endif %}
+                            <div class="product-card__info">
+                                <h4 class="product-card__name">{{ product.name }}</h4>
+                                <p class="product-card__price">${{ product.price }}</p>
+                                <p class="product-card__description">{{ product.description|truncatewords:10 }}</p>
+                            </div>
+                        </div>
+                    </a>
+                {% empty %}
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #666;">
+                        <i class="fa-solid fa-beer-mug-empty" style="font-size: 48px; margin-bottom: 15px; color: #ccc;"></i>
+                        <p>Товарів не знайдено за вашим запитом.</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Блок пагінації згідно з ТЗ 3.1 -->
+            {% if is_paginated %}
+                <div class="pagination" style="display: flex; justify-content: center; gap: 15px; margin-top: 30px; padding: 20px 0;">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" style="color: #333; text-decoration: none;">&laquo; Назад</a>
+                    {% endif %}
+
+                    <span>Сторінка {{ page_obj.number }} з {{ page_obj.paginator.num_pages }}</span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" style="color: #333; text-decoration: none;">Вперед &raquo;</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</main>
+</body>
+</html>

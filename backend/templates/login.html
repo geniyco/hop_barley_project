@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вхід в акаунт | Hop & Barley</title>
+
+    <!-- Google Fonts — Виправлено повне посилання -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com" rel="stylesheet">
+
+    <!-- Font Awesome — Виправлено CDN для іконок стрілочок та логіну -->
+    <link rel="stylesheet" href="https://cloudflare.com" />
+
+    <!-- Підключаємо головні стилі сайту -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body style="background: #f5f5f5; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'Inter', sans-serif; margin: 0; padding: 20px;">
+
+    <!-- Стильовий хак для автоматичних полів Django, щоб вони не роз'їжджалися -->
+    <style>
+        #id_username, #id_password {
+            width: 100% !important;
+            padding: 12px 16px !important;
+            border: 1px solid #ccc !important;
+            border-radius: 6px !important;
+            font-size: 15px !important;
+            box-sizing: border-box !important;
+            margin-top: 4px !important;
+            background-color: #fff !important;
+            transition: border-color 0.2s;
+        }
+        #id_username:focus, #id_password:focus {
+            border-color: #d4af37 !important;
+            outline: none !important;
+        }
+    </style>
+
+    <div style="background: #fff; width: 100%; max-width: 400px; padding: 40px; border-radius: 8px; border: 1px solid #eee; box-shadow: 0 4px 12px rgba(0,0,0,0.05); box-sizing: border-box;">
+
+        <!-- Логотип магазину -->
+        <div style="text-align: center; margin-bottom: 30px;">
+            <a href="{% url 'products:product_list' %}" style="text-decoration: none; display: inline-flex; align-items: center; gap: 10px; color: #111;">
+                <img src="{% static 'img/logo.svg' %}" alt="Hop & Barley Logo" style="width: 40px; height: 40px;">
+                <span style="font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">Hop & Barley</span>
+            </a>
+        </div>
+
+        <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 25px; color: #222; text-align: center;">Вхід до кабінету</h2>
+
+        <!-- Вивід системних повідомлень та помилок (Message Framework) -->
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 12px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; text-align: center;
+                            background-color: {% if message.tags == 'success' %}#d4edda{% else %}#f8d7da{% endif %};
+                            color: {% if message.tags == 'success' %}#155724{% else %}#721c24{% endif %};">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Form — Авторизація (Пункт 3.5 ТЗ) -->
+        <form method="post" action="{% url 'users:login' %}">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; text-align: center;">
+                    {{ form.non_field_errors.0 }}
+                </div>
+            {% endif %}
+
+            <!-- Поле: Логін -->
+            <div style="margin-bottom: 18px; text-align: left;">
+                <label for="{{ form.username.id_for_label }}" style="display: block; font-size: 14px; font-weight: 500; color: #444;">Ім'я користувача (Логін)</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <small style="color: #dc3545; font-size: 12px; display: block; margin-top: 4px;">{{ form.username.errors.0 }}</small>
+                {% endif %}
+            </div>
+
+            <!-- Поле: Пароль -->
+            <div style="margin-bottom: 25px; text-align: left;">
+                <label for="{{ form.password.id_for_label }}" style="display: block; font-size: 14px; font-weight: 500; color: #444;">Пароль</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                    <small style="color: #dc3545; font-size: 12px; display: block; margin-top: 4px;">{{ form.password.errors.0 }}</small>
+                {% endif %}
+            </div>
+
+            <!-- Кнопка входу з фіксованою золотою заливкою вашої теми -->
+            <button type="submit" class="button button--primary" style="width: 100%; padding: 13px; font-size: 16px; cursor: pointer; font-weight: 600; background-color: #d4af37; color: #fff; border: none; border-radius: 6px; box-sizing: border-box;">
+                Увійти <i class="fa-solid fa-right-to-bracket"></i>
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 25px; font-size: 14px; color: #666; border-top: 1px solid #eee; padding-top: 20px;">
+            Немає акаунту? <a href="{% url 'users:register' %}" style="color: #d4af37; text-decoration: none; font-weight: 600;">Зареєструватися</a>
+        </div>
+    </div>
+
+</body>
+</html>

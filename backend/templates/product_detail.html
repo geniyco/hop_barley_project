@@ -1,0 +1,142 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} | Hop & Barley</title>
+
+    <!-- Google Fonts (Виправлено посилання) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome CDN (Виправлено посилання для відображення іконок) -->
+    <link rel="stylesheet" href="https://cloudflare.com" />
+
+    <!-- Підключаємо головні стилі сайту -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+<!-- Header -->
+<header>
+    <div class="header-container">
+        <a href="{% url 'products:product_list' %}" class="header__logo">
+            <img src="{% static 'img/logo.svg' %}" alt="Hop & Barley Logo">
+            <p class="logo-text">Hop & Barley</p>
+        </a>
+        <nav class="header__nav">
+            <ul>
+                <li><a href="{% url 'products:product_list' %}">Products</a></li>
+                <li><a href="#">Guides & Recipes</a></li>
+                <li><a href="#">Community</a></li>
+                <li><a href="#">Resources</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </nav>
+
+        <div class="header__auth-buttons" id="auth-guest">
+            <a href="#" class="button button--secondary">Sign in</a>
+            <a href="#" class="button button--primary">Register</a>
+        </div>
+
+        <div class="header__user-actions" id="auth-user">
+            <a href="#" class="user-icon" aria-label="My Account">
+                <img src="{% static 'img/icons/User_alt.svg' %}" alt="User Account">
+            </a>
+            <a href="{% url 'orders:cart_detail' %}" class="cart-icon" aria-label="Shopping Cart">
+                <img src="{% static 'img/icons/Shopping_bag.svg' %}" alt="Shopping Cart">
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main style="padding: 40px 0;">
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+
+        <!-- Кнопка повернення в каталог -->
+        <a href="{% url 'products:product_list' %}" style="display: inline-block; margin-bottom: 20px; color: #555; text-decoration: none;">
+            <i class="fa-solid fa-arrow-left"></i> Назад до каталогу
+        </a>
+
+        <!-- Картка детальної інформації про товар (Пункт 3.2 ТЗ) -->
+        <div class="product-detail-wrapper" style="display: flex; gap: 40px; flex-wrap: wrap; margin-bottom: 5px;">
+
+            <!-- Зображення товару -->
+            <div class="product-detail__image" style="flex: 1; min-width: 300px; max-width: 500px;">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100%; border-radius: 8px; object-fit: cover;">
+                {% else %}
+                    <!-- Якщо зображення немає, ставимо дефолтне з вашої статики -->
+                    <img src="{% static 'img/products/citra_hops.jpg' %}" alt="{{ product.name }}" style="width: 100%; border-radius: 8px; object-fit: cover;">
+                {% endif %}
+            </div>
+
+            <!-- Інформація та блок замовлення -->
+            <div class="product-detail__info" style="flex: 1; min-width: 300px;">
+                <span style="font-size: 14px; color: #888; text-transform: uppercase;">{{ product.category.name }}</span>
+                <h1 style="font-size: 32px; margin: 10px 0; color: #111;">{{ product.name }}</h1>
+
+                <p style="font-size: 24px; font-weight: 700; color: var(--primary-color, #d4af37); margin-bottom: 20px;">
+                    ${{ product.price }}
+                </p>
+
+                <p style="font-size: 16px; color: #666; margin-bottom: 10px;">
+                    <strong>Статус:</strong>
+                    {% if product.stock > 0 %}
+                        <span style="color: green;">В наявності (Залишок: {{ product.stock }} шт.)</span>
+                    {% else %}
+                        <span style="color: red;">Немає в наявності</span>
+                    {% endif %}
+                </p>
+
+                <div style="margin-bottom: 30px; line-height: 1.6; color: #444;">
+                    <h3 style="margin-bottom: 10px;">Опис товару:</h3>
+                    <p>{{ product.description }}</p>
+                </div>
+
+                <!-- ФОРМА ДОДАВАННЯ В КОШИК (Виправлено action та підключено маршрут Django) -->
+                <form action="{% url 'orders:cart_add' product.id %}" method="post" style="display: flex; gap: 15px; align-items: center;">
+                    {% csrf_token %}
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <label for="quantity" style="font-size: 14px; color: #555;">Кількість:</label>
+                        <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock }}"
+                               style="width: 80px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; text-align: center;"
+                               {% if product.stock <= 0 %}disabled{% endif %}>
+                    </div>
+                    <button type="submit" class="button button--primary" style="padding: 12px 24px; font-size: 16px; margin-top: 22px; cursor: pointer;"
+                            {% if product.stock <= 0 %}disabled{% endif %}>
+                        {% if product.stock > 0 %}Додати в кошик{% else %}Немає в наявності{% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Блок відгуків користувачів (Пункт 3.2 ТЗ) -->
+        <section class="reviews-section" style="margin-top: 60px; border-top: 1px solid #eee; padding-top: 40px;">
+            <h2 style="font-size: 24px; margin-bottom: 20px;">Відгуки покупців ({{ reviews.count }})</h2>
+
+            <div class="reviews-list" style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 40px;">
+                {% for review in reviews %}
+                    <div class="review-item" style="background: #f9f9f9; padding: 20px; border-radius: 6px; border-left: 4px solid #d4af37;">
+                        <div style="display: flex; justify-content: block; align-items: center; gap: 15px; margin-bottom: 10px;">
+                            <strong style="color: #333;">{{ review.user.username }}</strong>
+                            <span style="color: #ffb100;">
+                                {% if review.rating == 5 %}★★★★★{% elif review.rating == 4 %}★★★★☆{% elif review.rating == 3 %}★★★☆☆{% elif review.rating == 2 %}★★☆☆☆{% else %}★☆☆☆☆{% endif %}
+                                ({{ review.rating }}/5)
+                            </span>
+                        </div>
+                        <p style="color: #555; line-height: 1.5;">{{ review.comment }}</p>
+                        <small style="color: #999; display: block; margin-top: 10px;">{{ review.created_at|date:"d.m.Y H:i" }}</small>
+                    </div>
+                {% empty %}
+                    <p style="color: #777; font-style: italic;">Відгуків про цей товар ще немає. Залиште свій першим після покупки!</p>
+                {% endfor %}
+            </div>
+        </section>
+
+    </div>
+</main>
+</body>
+</html>
