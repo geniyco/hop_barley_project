@@ -1,112 +1,66 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register | Hop & Barley</title>
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Font Awesome CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-    <!-- Link to your main CSS file -->
-    <link rel="stylesheet" href="../static/css/main.css">
+    <title>Реєстрація акаунту | Hop & Barley</title>
+    <link href="https://googleapis.com" rel="stylesheet">
+    <link rel="stylesheet" href="https://cloudflare.com" />
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
 </head>
-<body>
-<!-- Header -->
-<header>
-    <div class="header-container">
-        <a href="home.html" class="header__logo">
-            <img src="../static/img/logo.svg" alt="Hop & Barley Logo">
-            <p class="logo-text">Hop & Barley</p>
-        </a>
-        <nav class="header__nav">
-            <ul>
-                <li><a href="home.html">Products</a></li>
-                <li><a href="guides-recipes.html">Guides & Recipes</a></li>
-                <li><a href="#">Community</a></li>
-                <li><a href="#">Resources</a></li>
-                <li><a href="#">Contact</a></li>
-            </ul>
-        </nav>
+<body style="background: #f5f5f5; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'Inter', sans-serif; margin: 0; padding: 20px 0;">
 
-        <!-- Block for unauthorized user -->
-        <div class="header__auth-buttons" id="auth-guest">
-            <a href="login.html" class="button button--secondary">Sign in</a>
-            <a href="register.html" class="button button--primary">Register</a>
-        </div>
+    <div style="background: #fff; width: 100%; max-width: 450px; padding: 40px; border-radius: 8px; border: 1px solid #eee; box-shadow: 0 4px 12px rgba(0,0,0,0.05); box-sizing: border-box;">
 
-        <!-- Block for authorized user -->
-        <div class="header__user-actions" id="auth-user">
-            <a href="account.html" class="user-icon" aria-label="My Account">
-                <img src="../static/img/icons/User_alt.svg" alt="User Account">
+        <div style="text-align: center; margin-bottom: 25px;">
+            <a href="{% url 'products:product_list' %}" style="text-decoration: none; display: inline-flex; align-items: center; gap: 10px; color: #111;">
+                <img src="{% static 'img/logo.svg' %}" alt="Hop & Barley Logo" style="width: 40px; height: 40px;">
+                <span style="font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">Hop & Barley</span>
             </a>
-            <a href="cart.html" class="cart-icon" aria-label="Shopping Cart">
-                <img src="../static/img/icons/Shopping_bag.svg" alt="Shopping Cart">
-            </a>
+        </div>
 
+        <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 20px; color: #222; text-align: center;">Створення акаунту</h2>
+
+        <!-- ФОРМА РЕЄСТРАЦІЇ (Виправлено: додано метод, csrf та поля з ТЗ 3.5) -->
+        <form method="post" action="{% url 'users:register' %}">
+            {% csrf_token %}
+
+            <style>
+                .form-group-register { margin-bottom: 15px; text-align: left; }
+                .form-group-register label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; color: #444; }
+                .form-group-register input, .form-group-register textarea {
+                    width: 100%; padding: 11px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; box-sizing: border-box; background-color: #fff;
+                }
+                .form-group-register input:focus, .form-group-register textarea:focus { border-color: #d4af37; outline: none; }
+            </style>
+
+            {% if form.non_field_errors %}
+                <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; text-align: center;">
+                    {{ form.non_field_errors.0 }}
+                </div>
+            {% endif %}
+
+            <!-- Динамічний рендеринг полів форми Django з нашого users/forms.py -->
+            {% for field in form %}
+                <div class="form-group-register">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <small style="color: #dc3545; font-size: 12px; display: block; margin-top: 4px;">{{ field.errors.0 }}</small>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="button button--primary" style="width: 100%; padding: 13px; font-size: 16px; cursor: pointer; font-weight: 600; background-color: #d4af37; color: #fff; border: none; border-radius: 6px; margin-top: 10px; box-sizing: border-box;">
+                Зареєструватися <i class="fa-solid fa-user-plus"></i>
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 20px; font-size: 14px; color: #666; border-top: 1px solid #eee; padding-top: 15px;">
+            Вже є акаунт? <a href="{% url 'users:login' %}" style="color: #d4af37; text-decoration: none; font-weight: 600;">Увійти</a>
         </div>
     </div>
-</header>
 
-<!-- Main Content -->
-<main class="auth-page-wrapper">
-    <div class="auth-background">
-        <img src="../static/img/background/pattern.jpg" alt="Background pattern">
-    </div>
-    <div class="auth-form-container">
-        <div class="auth-container auth-container--register">
-            <div class="Legend">
-                <h1 class="auth-title">Register</h1>
-            </div>
-
-            <form class="auth-form" id="register-form">
-                <div class="InputField">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" class="Input" placeholder="Value" required>
-                </div>
-                <div class="InputField">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" class="Input" placeholder="Value" required>
-                </div>
-
-                <div class="CheckboxField">
-                    <label class="checkbox-container">Remember me
-                        <input type="checkbox" checked>
-                        <span class="checkmark"></span>
-                    </label>
-                </div>
-
-                <div class="ButtonGroup">
-                    <button type="submit" class="button button--primary">Register</button>
-                </div>
-            </form>
-
-            <p class="auth-switch">Already have an account? <a href="login.html">Sign in</a></p>
-        </div>
-    </div>
-</main>
-
-<!-- Footer -->
-<footer>
-    <img src="../static/img/background/image-footer.svg" alt="Hop & Barley Hops Logo" class="footer__hops-logo">
-    <nav class="footer__nav">
-        <ul>
-            <li><a href="#">Contact</a></li>
-            <li><a href="#">FAQ</a></li>
-            <li><a href="#">Community</a></li>
-            <li><a href="#">Resources</a></li>
-            <li><a href="#">License</a></li>
-        </ul>
-    </nav>
-    <p class="footer__copyright">© Hop & Barley 2025. All rights reserved</p>
-</footer>
-
-<!-- Link to your main JavaScript file -->
-<script src="../static/js/main.js"></script>
 </body>
 </html>

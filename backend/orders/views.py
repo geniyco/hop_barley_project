@@ -5,6 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.db import transaction  # Для використання транзакцій згідно з ТЗ 3.4
 from django.contrib.auth import get_user_model
 from rest_framework import viewsets, permissions
+from django.core.mail import send_mail
 
 from products.models import Product
 from .cart import Cart
@@ -57,7 +58,7 @@ def cart_detail(request: HttpRequest) -> HttpResponse:
 def order_create(request: HttpRequest) -> HttpResponse:
     """
     Обробник для оформлення замовлення.
-    Використовує транзакції (transaction.atomic) для безпечного збереження даних [3.4].
+    Використовує транзакції (transaction.atomic) для безпечного збереження даних та надсилає email [3.4].
     """
     cart = Cart(request)
     if len(cart) == 0:
@@ -104,6 +105,25 @@ def order_create(request: HttpRequest) -> HttpResponse:
 
                     cart.clear()
 
+                    # НАДСИЛАННЯ EMAIL-СПОВІЩЕННЯ ЗГІДНО З ТЗ 3.4
+                    subject = f"Hop & Barley — Замовлення №{order.id}"
+                    message = (
+                        f"Вітаємо, {order.user.username}!\n\n"
+                        f"Ваше замовлення №{order.id} успішно створено.\n"
+                        f"Адреса доставки: {order.shipping_address}\n"
+                        f"Загальна сума: ${order.total_price}\n\n"
+                        f"Дякуємо за покупку в Hop & Barley!"
+                    )
+                    # Надсилаємо на email користувача (якщо є) або на дефолтну адресу
+                    recipient = order.user.email if order.user.email else 'customer@example.com'
+                    send_mail(
+                        subject,
+                        message,
+                        'admin@hopbarley.com',
+                        [recipient],
+                        fail_silently=True,
+                    )
+
                 messages.success(request, f"Дякуємо! Ваше замовлення №{order.id} успішно створено.")
                 return redirect('products:product_list')
 
@@ -115,8 +135,6 @@ def order_create(request: HttpRequest) -> HttpResponse:
         form = OrderCreateForm()
 
     return render(request, 'checkout.html', {'cart': cart, 'form': form})
-
-
 # ==========================================
 # 2. REST API (Django REST Framework)
 # ==========================================
