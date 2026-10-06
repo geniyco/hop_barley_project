@@ -35,21 +35,25 @@
             </ul>
         </nav>
 
-        <!-- Блок для неавторизованого користувача -->
-        <div class="header__auth-buttons" id="auth-guest">
-            <a href="#" class="button button--secondary">Sign in</a>
-            <a href="#" class="button button--primary">Register</a>
-        </div>
-
-        <!-- Блок для авторизованого користувача -->
-        <div class="header__user-actions" id="auth-user">
-            <a href="#" class="user-icon" aria-label="My Account">
-                <img src="{% static 'img/icons/User_alt.svg' %}" alt="User Account">
-            </a>
-            <a href="#" class="cart-icon" aria-label="Shopping Cart">
-                <img src="{% static 'img/icons/Shopping_bag.svg' %}" alt="Shopping Cart">
-            </a>
-        </div>
+        <!-- Розумний блок авторизації згідно з ТЗ 3.5 -->
+        {% if not user.is_authenticated %}
+            <!-- Блок для неавторизованого користувача (Гість) -->
+            <div class="header__auth-buttons" id="auth-guest">
+                <a href="{% url 'users:login' %}" class="button button--secondary">Sign in</a>
+                <a href="{% url 'users:register' %}" class="button button--primary">Register</a>
+            </div>
+        {% else %}
+            <!-- Блок для авторизованого користувача (Покупець) -->
+            <div class="header__user-actions" id="auth-user">
+                <a href="{% url 'users:account' %}" class="user-icon" aria-label="My Account" style="text-decoration: none; margin-right: 15px;">
+                    <img src="{% static 'img/icons/User_alt.svg' %}" alt="User Account">
+                    <span style="font-size: 14px; font-weight: 600; color: #333; margin-left: 5px;">{{ user.username }}</span>
+                </a>
+                <a href="{% url 'orders:cart_detail' %}" class="cart-icon" aria-label="Shopping Cart">
+                    <img src="{% static 'img/icons/Shopping_bag.svg' %}" alt="Shopping Cart">
+                </a>
+            </div>
+        {% endif %}
     </div>
 </header>
 
